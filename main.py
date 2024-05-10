@@ -2,17 +2,21 @@
 # Author: NyboMønster
 
 #Imports
-from machine import Pin
+from machine import Pin, UART
 import _thread as Thread
 from time import sleep
 import umqtt_robust2 as mqtt
 
+
+uart2 = UART(2, baudrate=9600, tx=17, rx=16)
 #Code to control power-switching
-def PowerCTLSwitchThread(PowerSwitch):
+def PowerCTLSwitchThread(PowerSwitch, uart2):
     try:
         while True:
-            sleep(1)
             print("Test PowerSwitch ThreadLoop")
+            uart2.write('Test')
+            sleep(1)
+            uart2.read(5)
     except Exception as e:
         print(f"Exception with: {e}")
 
@@ -35,17 +39,17 @@ def MSGBrokerToAdaFruitThread(MSG):
 #Main
 PowerSwitch = "True"
 MSG = "Test"
-#try:
-#    Thread.start_new_thread(PowerCTLSwitchThread,(PowerSwitch))
+try:
+    Thread.start_new_thread(PowerCTLSwitchThread,(PowerSwitch, uart2))
 #    Thread.start_new_thread(MSGBrokerToAdaFruitThread,(MSG))
-#except Exception as e:
-#    print(f"Exception because error in starting thread: {e}")
+except Exception as e:
+    print(f"Exception because error in starting thread: {e}")
 
 while True:
     try:
         print("Testing")
         sleep(1)
-        PowerCTLSwitchThread(PowerSwitch)
+        PowerCTLSwitchThread(PowerSwitch, uart2)
         MSGBrokerToAdaFruitThread(MSG)
     except Exception as e:
         pass
