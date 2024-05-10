@@ -1,0 +1,4 @@
+# Config Files to ignore
+ConfigFileForESP32.py
+credentials.py
+
