@@ -8,6 +8,7 @@ import _thread as Thread
 from time import sleep
 from UART2Protocol import UART2Thread
 from SimpleProtocol import SimpleThread
+from LogiControllerPower import WhereToPower
 from machine import Pin, UART
 from credentials import credentials 
 from umqtt.robust import MQTTClient
@@ -36,7 +37,9 @@ if attempt_count == MAX_ATTEMPTS:
 # print("Everything connected") 
 
 uart2 = UART(2, baudrate=9600, tx=17, rx=16)
-ControllerPin = Pin(4)
+M1 = Pin(4)
+M2 = Pin(0)
+M3 = Pin(2)
 ProtocolToUse = credentials["ProtocolToUse"]
 GlobalMSG = []
 # create a random MQTT clientID 
@@ -79,19 +82,21 @@ def SubScribeMSG():
     print(GlobalMSG)
     
     
- 
+SolOn = BatOn = PSUOn = 0
 #Main
 MSG = "Test"
 Test = False
 if Test == True:
     try:
         if ProtocolToUse == "UART2":
-            Thread.start_new_thread(PowerCTLSwitchThread,(ControllerPin, uart2))
+            Thread.start_new_thread(UART2Thread,(M1, uart2))
+            Thread.start_new_thread(WhereToPower,(SolOn, BatOn, PSUOn))
         elif ProtocolToUse == "Simple":
-            Thread.start_new_thread(SimpleThread,(ControllerPin, uart2))
+            Thread.start_new_thread(SimpleThread,(M1, uart2))
+            Thread.start_new_thread(WhereToPower,(SolOn, BatOn, PSUOn))
     except Exception as e:
         print(f"Exception because error in starting thread: {e}")
-
+#Thread.start_new_thread(WhereToPower,(SolOn, BatOn, PSUOn))
 while True:
     try:
         PublishMSG("Test Func")
