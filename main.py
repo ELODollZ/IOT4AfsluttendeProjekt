@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # Author: NyboMønster
 # Sources: 
-# https://github.com/aloishockenschlohe/dpm86_power_supply
+# https://github.com/aloishockenschlohe/dpm86_power_supply		#pubAndSub.py
 
 #Imports
 import _thread as Thread
@@ -64,7 +64,7 @@ topic = ""
 msg = ""
 # MQTT Feeds for AdaFruit
 mqtt_MainFeed = bytes('{:s}/feeds/{:s}'.format(credentials['ADAFRUIT_USERNAME'], credentials['ADAFRUIT_IO_FEEDNAME']), 'utf-8')
-mqtt_ToggleButton = bytes('{:s}/feeds/{:s}'.format(credentials['ADAFRUIT_USERNAME'], "iot4.toggle-button"), 'utf-8')
+mqtt_ToggleButton = bytes('{:s}/feeds/{:s}'.format(credentials['ADAFRUIT_USERNAME'], credentials['ADAFRUIT_TOGGLE_BUTTON']), 'utf-8')
 
 
 def PublishMSG(MSGToPub):
