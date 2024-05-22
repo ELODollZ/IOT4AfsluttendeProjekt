@@ -111,8 +111,8 @@ while True:
         sleep(1)
     except OSError as e:
         print(f"OSError in: {e}")
-        mqtt.c.disconnect()
-        mqtt.sys.exit()
+        client.disconnect()
+        sys.exit()
     except KeyboardInterrupt:
         print('Ctrl-C pressed...exiting')
         client.disconnect()
