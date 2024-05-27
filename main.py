@@ -92,22 +92,6 @@ msg = ""
 SolOn = BatOn = PSUOn = 0
 #Main
 MSG = "Test"
-<<<<<<< HEAD
-Test = True
-#if Test == True:
-#    try:
-#        if ProtocolToUse == "UART2":
-            #MosfetThread1 = Thread.start_new_thread(UART2Thread,(MosfetPinControl1, uart2))
-            #MosfetThread2 = Thread.start_new_thread(UART2Thread,(MosfetPinControl2, uart2))
-            #MosfetThread3 = Thread.start_new_thread(UART2Thread,(MosfetPinControl3, uart2))
-#        elif ProtocolToUse == "Simple":
-            #MosfetThread1 = Thread.start_new_thread(SimpleThread,(MosfetPinControl1, uart2))
-            #MosfetThread2 = Thread.start_new_thread(SimpleThread,(MosfetPinControl2, uart2))
-            #MosfetThread3 = Thread.start_new_thread(SimpleThread,(MosfetPinControl3, uart2))
-#    except Exception as e:
-#        print(f"Exception because error in starting thread: {e}")
-
-=======
 Test = False
 if Test == True:
     try:
@@ -120,7 +104,6 @@ if Test == True:
     except Exception as e:
         print(f"Exception because error in starting thread: {e}")
 #Thread.start_new_thread(WhereToPower,(SolOn, BatOn, PSUOn))
->>>>>>> d80e27a93a8ee8d2f2a1c7a48902ff5fd03343dd
 while True:
     try:
         #UART2Thread(MosfetPinControl1, uart2)
