@@ -40,6 +40,7 @@ uart2 = UART(2, baudrate=9600, tx=17, rx=16)
 M1 = Pin(credentials['Pin_For_Mosfets1'])
 M2 = Pin(credentials['Pin_For_Mosfets2'])
 M3 = Pin(credentials['Pin_For_Mosfets3'])
+TransmiteNOWPin = Pin(credentials['TransmitPin'])
 ProtocolToUse = credentials["ProtocolToUse"]
 GlobalMSG = []
 # create a random MQTT clientID 

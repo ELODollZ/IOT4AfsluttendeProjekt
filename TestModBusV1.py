@@ -3,12 +3,11 @@ from time import sleep
 import struct
 
 uart = UART(2, baudrate=9600, bits=8, parity=None, stop=1, tx=17, rx=16)
-RePin = Pin(4, Pin.OUT)
-DePin = Pin(0, Pin.OUT)
+DeRePin = Pin(4, Pin.OUT)
+MosfestPin = Pin(0, Pin.OUT)
 
 def enable_transmitter(enable):
-    DePin.value(1 if enable else 0)
-    RePin.value(1 if enable else 0)
+    DeRePin.value(1 if enable else 0)
     print('Transmitter Enabled' if enable else 'Receiver Enabled')
 
 def crc16(data: bytes) -> int:
@@ -53,12 +52,12 @@ def send_modbus_request(slave_addr, function_code, start_addr, quantity):
         print('Ingen svar modtaget')
         return None
     
-    test = struct.pack('>BBHH', 5, 10, 1, 2,4, 24, 2, 2)
-    crcTest = crc16(test)
-    test += struct.pack('<H', crcTest)
-    enable_transmitter(True)
-    sleep(0.00575)
-    uart.write(test)
+    #test = struct.pack('>BBHH', 5, 10, 1, 2,4, 24, 2, 2)
+    #crcTest = crc16(test)
+    #test += struct.pack('<H', crcTest)
+    #enable_transmitter(True)
+    #sleep(0.00575)
+    #uart.write(test)
     
 
 def parse_response(response):
