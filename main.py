@@ -8,6 +8,7 @@ import _thread as Thread
 from time import sleep
 from UART2Protocol import UART2Thread
 from SimpleProtocol import SimpleThread
+from LogiControllerPower import WhereToPower
 from machine import Pin, UART
 from credentials import credentials 
 from umqtt.robust import MQTTClient
@@ -36,10 +37,16 @@ from credentials import credentials
 # print("Everything connected") 
 
 uart2 = UART(2, baudrate=9600, tx=17, rx=16)
+<<<<<<< HEAD
 MosfetPinControl1 = Pin(0)
 MosfetPinControl2 = Pin(2)
 MosfetPinControl3 = Pin(15)
 TransmiteNOWPin = Pin(4,Pin.OUT)
+=======
+M1 = Pin(credentials['Pin_For_Mosfets1'])
+M2 = Pin(credentials['Pin_For_Mosfets2'])
+M3 = Pin(credentials['Pin_For_Mosfets3'])
+>>>>>>> d80e27a93a8ee8d2f2a1c7a48902ff5fd03343dd
 ProtocolToUse = credentials["ProtocolToUse"]
 GlobalMSG = []
 # create a random MQTT clientID 
@@ -82,9 +89,10 @@ msg = ""
  #   print(GlobalMSG)
     
     
- 
+SolOn = BatOn = PSUOn = 0
 #Main
 MSG = "Test"
+<<<<<<< HEAD
 Test = True
 #if Test == True:
 #    try:
@@ -99,6 +107,20 @@ Test = True
 #    except Exception as e:
 #        print(f"Exception because error in starting thread: {e}")
 
+=======
+Test = False
+if Test == True:
+    try:
+        if ProtocolToUse == "UART2":
+            Thread.start_new_thread(UART2Thread,(M1, uart2))
+            Thread.start_new_thread(WhereToPower,(SolOn, BatOn, PSUOn))
+        elif ProtocolToUse == "Simple":
+            Thread.start_new_thread(SimpleThread,(M1, uart2))
+            Thread.start_new_thread(WhereToPower,(SolOn, BatOn, PSUOn))
+    except Exception as e:
+        print(f"Exception because error in starting thread: {e}")
+#Thread.start_new_thread(WhereToPower,(SolOn, BatOn, PSUOn))
+>>>>>>> d80e27a93a8ee8d2f2a1c7a48902ff5fd03343dd
 while True:
     try:
         #UART2Thread(MosfetPinControl1, uart2)
