@@ -9,7 +9,7 @@ from time import sleep
 import os
 import network
 import sys
-from umqtt.robust import MQTTClient
+from umqtt.robust2 import MQTTClient
 from credentials import credentials 
 
 from ModBusRTUController import SetVoltageAndCurrentOnDPM8624, SetCurrentOnDPM8624, SetVoltageOnDPM8624, RequestDPM8624Setting
