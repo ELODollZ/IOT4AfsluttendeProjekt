@@ -37,7 +37,6 @@ print("Everything connected")
 
 uart2 =  credentials["ProtocolToUse"]
 TransmiteNOWPin = Pin(credentials['TransmitPin'])
-MosfetPin = Pin(credentials['Pin_For_Mosfets1'])
 GlobalMSG = []
 # create a random MQTT clientID 
 random_num = int.from_bytes(os.urandom(3), 'little')
@@ -100,10 +99,9 @@ while True:
         else:
             print("No button pressed")
         if 'SolarPowerOn, turning on' in GlobalMSG :
-            TransmiteNOWPin(MosfetPin, True)
+            print("Solar Power detected, Turning on")
         elif 'SolarPowerOff' in GlobalMSG:
-            print("No Solar Power, turning off")
-            TransmiteNOWPin(MosfetPin, False)  
+            print("No Solar Power, Turning off")
         GlobalMSG.clear()
         print("-----		-----")
         sleep(1)
