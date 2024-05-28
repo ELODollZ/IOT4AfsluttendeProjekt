@@ -36,10 +36,8 @@ if attempt_count == MAX_ATTEMPTS:
 print("Everything connected") 
 
 uart2 =  credentials["ProtocolToUse"]
-M1 = Pin(credentials['Pin_For_Mosfets1'])
-M2 = Pin(credentials['Pin_For_Mosfets2'])
-M3 = Pin(credentials['Pin_For_Mosfets3'])
 TransmiteNOWPin = Pin(credentials['TransmitPin'])
+MosfetPin = Pin(credentials['Pin_For_Mosfets1'])
 GlobalMSG = []
 # create a random MQTT clientID 
 random_num = int.from_bytes(os.urandom(3), 'little')
@@ -93,14 +91,19 @@ while True:
             SetVoltageAndCurrentOnDPM8624(uart2, TransmiteNOWPin, DPM8624Address, 42, 2)
             PublishMSG(MSG)
         else:
-            print("No button")
+            print("No button toggled")
         if '2' in GlobalMSG or '3' in GlobalMSG:
             MSG = "Charge now"
             SetVoltageOnDPM8624(uart2, TransmiteNOWPin, DPM8624Address, 36)
             SetCurrentOnDPM8624(uart2, TransmiteNOWPin, DPM8624Address, 1.5)
             PublishMSG(MSG)
         else:
-            print("No button") 
+            print("No button pressed")
+        if 'SolarPowerOn, turning on' in GlobalMSG :
+            TransmiteNOWPin(MosfetPin, True)
+        elif 'SolarPowerOff' in GlobalMSG:
+            print("No Solar Power, turning off")
+            TransmiteNOWPin(MosfetPin, False)  
         GlobalMSG.clear()
         print("-----		-----")
         sleep(1)

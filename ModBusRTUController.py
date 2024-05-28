@@ -1,3 +1,7 @@
+#!/usr/bin/env python3
+# Author: NyboMønster
+# Sources: 
+# https://docs.python.org/3/library/struct.html
 from machine import Pin, UART
 from time import sleep
 import struct
