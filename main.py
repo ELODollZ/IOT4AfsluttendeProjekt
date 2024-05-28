@@ -40,7 +40,6 @@ M1 = Pin(credentials['Pin_For_Mosfets1'])
 M2 = Pin(credentials['Pin_For_Mosfets2'])
 M3 = Pin(credentials['Pin_For_Mosfets3'])
 TransmiteNOWPin = Pin(credentials['TransmitPin'])
-ProtocolToUse = credentials["ProtocolToUse"]
 GlobalMSG = []
 # create a random MQTT clientID 
 random_num = int.from_bytes(os.urandom(3), 'little')
@@ -83,9 +82,7 @@ def SubScribeMSG():
     print(GlobalMSG)
     
 #Main  
-SolOn = BatOn = PSUOn = 0
 DPM8624Address = 3
-MSG = "Test"
 
 while True:
     try:
