@@ -25,7 +25,7 @@
 
 import network
 import time
-from umqtt.robust import MQTTClient
+from umqtt.robust2 import MQTTClient
 import os
 import gc
 import sys

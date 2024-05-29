@@ -2,7 +2,7 @@
 # Author: NyboMønster
 # Sources: 
 # https://docs.python.org/3/library/struct.html
-from machine import Pin, UART
+from machine import Pin
 from time import sleep
 import struct
 from credentials import credentials
@@ -26,14 +26,15 @@ def CRC16Bites(data: bytes )-> int:
     return CRC
 
 def CheckResponse(Response):
+    print(Response)
     if len(Response) < 5:
         ResponseMSG = 'Ugyldigt svar'
         print(ResponseMSG)
         return ResponseMSG
     ReceivedCRC = struct.unpack('<H', Response[-2:])[0]
-    CalculatedCRC = CRC16Bites(Response[:-2])
+    CalculatedCRC = CRC16Bites(Response[-2:])  #Test med [:-2]
     if ReceivedCRC != CalculatedCRC:
-        ResponseMSG = 'Ugyldigt svar'
+        ResponseMSG = 'Ugyldigt CRC svar'
         print(ResponseMSG)
         return ResponseMSG
     Address, FunktionCode, ByteCount = struct.unpack('>BBB', Response[:3])
@@ -119,7 +120,7 @@ def SetVoltageAndCurrentOnDPM8624(uart2, DataEnableReceiveDisabled, Address, Vol
     Value = [int(Voltage*100), int(Current * 1000)]
     AntalForsendelser = len(Value)
     ByteAntal = AntalForsendelser * 2
-    Request = struct.pack('>BBHH', Address, FunctionCode, RegisterAddress, AntalForsendelser, ByteAntal)
+    Request = struct.pack('>BBHHH', Address, FunctionCode, RegisterAddress, AntalForsendelser, ByteAntal)
     for value in Value:
         Request += struct.pack('<H', value)
     CRC = CRC16Bites(Request)
