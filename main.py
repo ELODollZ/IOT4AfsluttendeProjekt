@@ -9,7 +9,7 @@ from time import sleep
 import os
 import network
 import sys
-from umqtt.robust2 import MQTTClient
+from umqtt.umqttsimple import MQTTClient
 from credentials import credentials 
 
 from ModBusRTUController import SetVoltageAndCurrentOnDPM8624, SetCurrentOnDPM8624, SetVoltageOnDPM8624, RequestDPM8624Setting
@@ -35,10 +35,11 @@ if attempt_count == MAX_ATTEMPTS:
     sys.exit()
 print("Everything connected") 
 
-uart2 =  credentials["uart2"]
+uart2 = UART(2, baudrate=9600, tx=credentials['TX'], rx=credentials['RX'], bits=8, parity=None, stop=1)
 TransmiteNOWPin = Pin(credentials['TransmitPin'])
+mosfet1 = Pin(credentials['Pin_For_Mosfets1'])
 GlobalMSG = []
-DPM8624Address = 3
+DPM8624Address = 9
 # create a random MQTT clientID 
 random_num = int.from_bytes(os.urandom(3), 'little')
 mqtt_client_id = bytes('client_'+str(random_num), 'utf-8')
@@ -72,6 +73,8 @@ def cb(topic, msg):
 def PublishMSG(MSGToPub):
         client.publish(mqtt_MainFeed, bytes(str(MSGToPub), 'utf-8'))
 def SubscribeMSG():
+    print("lytter for svar på adafruit")
+    sleep(0.5)
     client.set_callback(cb)
     client.subscribe(mqtt_MainFeed)
     client.subscribe(mqtt_ToggleButton)
@@ -82,7 +85,8 @@ def SubscribeMSG():
 #Main  
 while True:
     try:
-        RequestDPM8624Setting(uart2, TransmiteNOWPin, DPM8624Address)
+        #Response = RequestDPM8624Setting(uart2, TransmiteNOWPin, DPM8624Address)
+        #PublishMSG(Response)
         SubscribeMSG()
         if '1' in GlobalMSG:
             MSG = "Button Pressed, turn on"
@@ -107,8 +111,10 @@ while True:
         else:
             print("No button pressed")
         if 'SolarPowerOn, turning on' in GlobalMSG :
+            mosfet1.value(0)
             print("Solar Power detected, Turning on")
         elif 'SolarPowerOff' in GlobalMSG:
+            mosfet1.value(1)
             print("No Solar Power, Turning off")
         GlobalMSG.clear()
         print("-----		-----")

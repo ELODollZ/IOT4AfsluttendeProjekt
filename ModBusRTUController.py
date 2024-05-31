@@ -2,37 +2,39 @@
 # Author: NyboMønster
 # Sources: 
 # https://docs.python.org/3/library/struct.html
-from machine import Pin
+from machine import Pin, UART
 from time import sleep
 import struct
 from credentials import credentials
 
 DataEnableReceiveDisabled = Pin(credentials['TransmitPin'], Pin.OUT)
-uart2 =  credentials["uart2"]
+uart2 = UART(2, baudrate=9600, tx=credentials['TX'], rx=credentials['RX'], bits=8, parity=None, stop=1)
 
 def TransmitNow(DataEnableReceiveDisabled, enable):
     DataEnableReceiveDisabled.value(1 if enable else 0)
+TransmitNow(DataEnableReceiveDisabled, False)
 
 def CRC16Bites(data: bytes )-> int:
     CRC = 0xFFFF
-    for Position in data:
-        CRC ^= Position
+    for Byte in data:
+        CRC ^= Byte
         for Bite in range(8):
             if (CRC & 1) != 0:
                 CRC >>= 1
                 CRC ^= 0xA001
             else:
-                CRC >> 0
+                CRC >>= 1
     return CRC
 
 def CheckResponse(Response):
-    print(Response)
+    print("Response: ", Response)
     if len(Response) < 5:
         ResponseMSG = 'Ugyldigt svar'
         print(ResponseMSG)
         return ResponseMSG
     ReceivedCRC = struct.unpack('<H', Response[-2:])[0]
-    CalculatedCRC = CRC16Bites(Response[-2:])  #Test med [:-2]
+    CalculatedCRC = CRC16Bites(Response[:-2])
+    print("Received CRC: ", ReceivedCRC, "Calculated CRC: ", CalculatedCRC)
     if ReceivedCRC != CalculatedCRC:
         ResponseMSG = 'Ugyldigt CRC svar'
         print(ResponseMSG)
@@ -42,7 +44,8 @@ def CheckResponse(Response):
         errorCode = struct.unpack('>B', Response[3:4])[0]
         print(f"ErrorCode: {errorCode}")
         return errorCode
-    DataFromDPM8624 = struct.unpack(f'>{ByteCount//2}H', Response[3:-2])
+    DataFromDPM8624 = struct.unpack(f'>{ByteCount//2}H', Response[3:3+ByteCount])
+    print("DataFromDPM: ", DataFromDPM8624)
     return DataFromDPM8624
 
 def RequestDPM8624Setting(uart2, DataEnableReceiveDisabled, Address):
@@ -51,16 +54,19 @@ def RequestDPM8624Setting(uart2, DataEnableReceiveDisabled, Address):
     Request += struct.pack('<H', CRC)
     TransmitNow(DataEnableReceiveDisabled, True)
     uart2.write(Request)
-    MSG = 'Forspørgelsen sendt:', ''.join(['{:02x}'.format(x) for x in Request])
+    MSG = 'Request sent:', ''.join(['{:02x}'.format(x) for x in Request])
     print(MSG)
     sleep(0.01)
     TransmitNow(DataEnableReceiveDisabled, False)
     sleep(2)
     Response = uart2.read()
+    print("Rå Data: ", Response)
     if Response:
-        ResponseMSG = 'Svar modtaget:', ''.join(['{:02x}'.format(x) for x in Response])
-        print(ResponseMSG)
-        return ResponseMSG
+        DataFromDPM8624 = CheckResponse(Response)
+        if isinstance(DataFromDPM8624, list):
+            ResponseMSG = 'Answar Received:', ''.join(['{:02x}'.format(x) for x in DataFromDPM8624])
+            print(ResponseMSG)
+            return ResponseMSG
     else:
         ResponseMSG = 'Ingen svar modtaget'
         print(ResponseMSG)
@@ -75,7 +81,7 @@ def SetVoltageOnDPM8624(uart2, DataEnableReceiveDisabled, Address, Voltage):
     Request += struct.pack('<H', CRC)
     TransmitNow(DataEnableReceiveDisabled, True)
     uart2.write(Request)
-    RequestMSG = 'Sætter spænding;', Voltage, 'Volt, Forespørgsel sendt:', ''.join(['{:02x}'.format(x) for x in Request])
+    RequestMSG = 'Setting Voltage;', Voltage, 'Volt, Request Sent:', ''.join(['{:02x}'.format(x) for x in Request])
     print(RequestMSG)
     sleep(0.01)
     TransmitNow(DataEnableReceiveDisabled, False)
@@ -92,14 +98,14 @@ def SetVoltageOnDPM8624(uart2, DataEnableReceiveDisabled, Address, Voltage):
     
 def SetCurrentOnDPM8624(uart2, DataEnableReceiveDisabled, Address, Current):
     FunctionCode = 6
-    RegisterAddress = 0x0000
+    RegisterAddress = 0x0001
     Value = int(Current * 1000)
     Request = struct.pack('>BBHH', Address, FunctionCode, RegisterAddress, Value)
     CRC = CRC16Bites(Request)
     Request += struct.pack('<H', CRC)
     TransmitNow(DataEnableReceiveDisabled, True)
     uart2.write(Request)
-    RequestMSG = 'Sætter strøm;', Current, 'Amp, Forespørgsel sendt:', ''.join(['{:02x}'.format(x) for x in Request])
+    RequestMSG = 'Setting Current;', Current, 'Amp, Request sent:', ''.join(['{:02x}'.format(x) for x in Request])
     print(RequestMSG)
     sleep(0.01)
     TransmitNow(DataEnableReceiveDisabled, False)
@@ -117,17 +123,17 @@ def SetCurrentOnDPM8624(uart2, DataEnableReceiveDisabled, Address, Current):
 def SetVoltageAndCurrentOnDPM8624(uart2, DataEnableReceiveDisabled, Address, Voltage, Current):
     FunctionCode = 16
     RegisterAddress = 0x0000
-    Value = [int(Voltage*100), int(Current * 1000)]
-    AntalForsendelser = len(Value)
+    Values = [int(Voltage * 100), int(Current * 1000)]
+    AntalForsendelser = len(Values)
     ByteAntal = AntalForsendelser * 2
-    Request = struct.pack('>BBHHH', Address, FunctionCode, RegisterAddress, AntalForsendelser, ByteAntal)
-    for value in Value:
-        Request += struct.pack('<H', value)
+    Request = struct.pack('>BBHHB', Address, FunctionCode, RegisterAddress, AntalForsendelser, ByteAntal)
+    for value in Values:
+        Request += struct.pack('>H', value)
     CRC = CRC16Bites(Request)
     Request += struct.pack('<H', CRC)
     TransmitNow(DataEnableReceiveDisabled, True)
     uart2.write(Request)
-    RequestMSG = 'Sætter spænding;', Voltage, 'Volt,', 'Sætter Strøm;', Current, 'Amp,',' Forespørgsel sendt:', ''.join(['{:02x}'.format(x) for x in Request])
+    RequestMSG = 'Setting Voltage;', Voltage, 'Volt,', 'Setting Current;', Current, 'Amp,',' Request sent:', ''.join(['{:02x}'.format(x) for x in Request])
     print(RequestMSG)
     sleep(0.01)
     TransmitNow(DataEnableReceiveDisabled, False)
