@@ -11,7 +11,7 @@ import network
 import sys
 from umqtt.umqttsimple import MQTTClient
 from credentials import credentials 
-
+from Mosfet import Mosfet1
 from ModBusRTUController import SetVoltageAndCurrentOnDPM8624, SetCurrentOnDPM8624, SetVoltageOnDPM8624, RequestDPM8624Setting
 
 
@@ -37,7 +37,8 @@ print("Everything connected")
 
 uart2 = UART(2, baudrate=9600, tx=credentials['TX'], rx=credentials['RX'], bits=8, parity=None, stop=1)
 TransmiteNOWPin = Pin(credentials['TransmitPin'])
-mosfet1 = Pin(credentials['Pin_For_Mosfets1'])
+mosfet1 = Pin(0, Pin.OUT)
+#mosfet1.value(0)
 GlobalMSG = []
 DPM8624Address = 9
 # create a random MQTT clientID 
@@ -85,7 +86,8 @@ def SubscribeMSG():
 #Main  
 while True:
     try:
-        #Response = RequestDPM8624Setting(uart2, TransmiteNOWPin, DPM8624Address)
+        Response = RequestDPM8624Setting(uart2, TransmiteNOWPin, DPM8624Address)
+        print(Response)
         #PublishMSG(Response)
         SubscribeMSG()
         if '1' in GlobalMSG:
@@ -110,7 +112,7 @@ while True:
             PublishMSG(MSG)
         else:
             print("No button pressed")
-        if 'SolarPowerOn, turning on' in GlobalMSG :
+        if 'SolarPowerOn' in GlobalMSG :
             mosfet1.value(0)
             print("Solar Power detected, Turning on")
         elif 'SolarPowerOff' in GlobalMSG:
